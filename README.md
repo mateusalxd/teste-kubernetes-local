@@ -41,6 +41,8 @@ minikube dashboard
 minikube config set driver docker
 minikube start
 
+minikube dashboard # execute em um terminal separado
+
 # Somente exemplo de enviar imagem para o registry local
 docker run -d -p 5000:5000 --restart=always --name registry registry:2
 docker pull hello-world
@@ -56,6 +58,8 @@ kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}
 kubectl port-forward svc/argocd-server -n argocd 8080:443 # execute em um terminal separado
 # acesse https://localhost:8080/ com usuário admin e com a senha recuperada com o comando abaixo
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+
+helm create teste1-chart
 
 ```
 
