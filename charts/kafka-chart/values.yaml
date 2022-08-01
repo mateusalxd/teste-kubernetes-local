@@ -1,0 +1,6 @@
+namespace: kafka
+
+kafka:
+  clusters: 1
+  brokers: 2
+  serviceType: ClusterIP

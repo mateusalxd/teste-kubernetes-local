@@ -73,16 +73,26 @@ argocd app create teste1 \
 --sync-policy auto \
 --sync-option CreateNamespace=true
 
-docker pull bitnami/zookeeper:3.7.1
-minikube image load bitnami/zookeeper:3.7.1
+docker pull confluentinc/cp-zookeeper:7.2.1
+minikube image load confluentinc/cp-zookeeper:7.2.1
 
-docker pull bitnami/kafka:3.1.1
-minikube image load bitnami/kafka:3.1.1
+docker pull confluentinc/cp-kafka:7.2.1
+minikube image load confluentinc/cp-kafka:7.2.1
 
 docker pull provectuslabs/kafka-ui:latest
 minikube image load provectuslabs/kafka-ui:latest
 
-kubectl port-forward deployments/kafka-ui -n kafka-local 8081:8080
+docker pull ghcr.io/banzaicloud/kafka:2.13-3.1.0
+minikube image load ghcr.io/banzaicloud/kafka:2.13-3.1.0
+
+minikube service kafka-ui-service -n kafka
+
+helm install --debug --dry-run kafka-chart charts/kafka-chart/ --values charts/kafka-chart/values.yaml
+helm install kafka-chart charts/kafka-chart/ --values charts/kafka-chart/values.yaml
+helm delete kafka-chart
+
+kubectl -n kafka run kafka-topics -it --image=ghcr.io/banzaicloud/kafka:2.13-3.1.0 --rm=true --restart=Never -- /opt/kafka/bin/kafka-topics.sh --zookeeper zookeeper-0-service:2181 --topic my-topic --create --partitions 3 --replication-factor 3
+
 ```
 
 ## Links úteis
@@ -94,3 +104,5 @@ kubectl port-forward deployments/kafka-ui -n kafka-local 8081:8080
 - [Informar diretório local como source no ArgoCD](https://github.com/argoproj/argo-cd/issues/3432)
 - [Configurações gerais (bastante coisa aqui)](https://robertbrem.github.io/Microservices_with_Kubernetes/01_Setup/01_Host_setup/)
 - [Rodar Kafka no minikube](https://technology.amis.nl/platform/kubernetes/running-apache-kafka-on-minikube/)
+- [Configurações para usar Kafka da Confluent no Docker](https://docs.confluent.io/platform/current/installation/docker/config-reference.html)
+- [Operador de teste do Kafka](https://banzaicloud.com/docs/supertubes/kafka-operator/test/)

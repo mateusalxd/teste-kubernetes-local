@@ -1,0 +1,149 @@
+{{- $kafkaPort := 9092 | int}}
+{{- $broker := 0 | int }}
+{{- $brokerPort := $kafkaPort | int }}
+{{- range $indexCluster, $valueCluster := until (.Values.kafka.clusters | int) }}
+# zookeeper
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-{{ $indexCluster }}-service
+  namespace: {{ $.Values.namespace }}
+spec:
+  type: {{ $.Values.kafka.serviceType }}
+  ports:
+    - port: 2181
+  selector:
+    app: zookeeper-{{ $indexCluster }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-{{ $indexCluster }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: zookeeper-{{ $indexCluster }}
+  replicas: 1
+  template:
+    metadata:
+      namespace: {{ $.Values.namespace }}
+      labels:
+        app: zookeeper-{{ $indexCluster }}
+    spec:
+      containers:
+        - name: zookeeper-{{ $indexCluster }}
+          image: confluentinc/cp-zookeeper:7.2.1
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_TICK_TIME
+              value: "2000"
+            - name: ZOOKEEPER_SYNC_LIMIT
+              value: "2"
+---
+# kafka
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-{{ $indexCluster }}-service
+  namespace: {{ $.Values.namespace }}
+spec:
+  type: {{ $.Values.kafka.serviceType }}
+  ports:
+    {{- $broker = 0 | int }}
+    {{- range $indexBroker, $valueBroker := until ($.Values.kafka.brokers | int) }}
+    {{- $brokerPort = add $kafkaPort $broker }}  
+    - port: {{ $brokerPort }}
+      name: cluster-port-{{ $broker }}
+    - port: 2{{ $brokerPort }}
+      name: localhost-port-{{ $broker }}
+    {{- $broker = add1 $broker }}              
+    {{- end }}      
+  selector:
+    app: kafka-{{ $indexCluster }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-{{ $indexCluster }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: kafka-{{ $indexCluster }}
+  replicas: 1
+  template:
+    metadata:
+      namespace: {{ $.Values.namespace }}
+      labels:
+        app: kafka-{{ $indexCluster }}
+    spec:
+      containers:
+        {{- $broker = 0 | int }}
+        {{- range $indexBroker, $valueCluster := until ($.Values.kafka.brokers | int) }}
+        {{- $brokerPort = add $kafkaPort $broker }}
+        - name: kafka-{{ $indexCluster }}-{{ $broker }}
+          image: confluentinc/cp-kafka:7.2.1
+          ports:
+            - containerPort: {{ $brokerPort }}
+          env:
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: zookeeper-{{ $indexCluster }}-service:2181
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: PLAINTEXT:PLAINTEXT,CLUSTER:PLAINTEXT
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: PLAINTEXT://localhost:2{{ $brokerPort }},CLUSTER://kafka-{{ $indexCluster }}-service:{{ $brokerPort }}
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+        {{- $broker = add1 $broker }}              
+        {{- end }}
+---
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui-service
+  namespace: {{ $.Values.namespace }}
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      nodePort: 30000
+  selector:
+    app: kafka-ui
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+  namespace: {{ $.Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: kafka-ui
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest
+          ports:
+            - containerPort: 8080
+          env:
+            {{- range $indexCluster, $valueCluster := until (.Values.kafka.clusters | int) }}
+            - name: KAFKA_CLUSTERS_{{ $indexCluster }}_NAME
+              value: cluster-{{ $indexCluster }}
+            - name: KAFKA_CLUSTERS_{{ $indexCluster }}_BOOTSTRAPSERVERS
+              value: kafka-{{ $indexCluster }}-service:9092
+            - name: KAFKA_CLUSTERS_{{ $indexCluster }}_ZOOKEEPER
+              value: zookeeper-{{ $indexCluster }}-service:2181
+            {{- end }}
