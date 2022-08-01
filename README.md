@@ -93,6 +93,14 @@ helm delete kafka-chart
 
 kubectl -n kafka run kafka-topics -it --image=ghcr.io/banzaicloud/kafka:2.13-3.1.0 --rm=true --restart=Never -- /opt/kafka/bin/kafka-topics.sh --zookeeper zookeeper-0-service:2181 --topic my-topic --create --partitions 3 --replication-factor 3
 
+argocd app create kafka \
+--repo https://github.com/mateusalxd/teste-kubernetes-local.git \
+--path charts/kafka-chart \
+--dest-server https://kubernetes.default.svc \
+--dest-namespace kafka \
+--sync-policy auto \
+--sync-option CreateNamespace=true
+
 ```
 
 ## Links úteis
