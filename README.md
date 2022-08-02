@@ -118,9 +118,9 @@ argocd app create camel-kafka-producer \
 --sync-policy auto \
 --sync-option CreateNamespace=true
 
-argocd app create camel-kafka-producer \
+argocd app create camel-kafka-consumer \
 --repo https://github.com/mateusalxd/teste-kubernetes-local.git \
---path charts/camel-kafka-producer-chart \
+--path charts/camel-kafka-consumer-chart \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace local \
 --sync-policy auto \
