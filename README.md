@@ -66,14 +66,6 @@ helm create teste1-chart
 
 argocd login localhost:8080
 
-argocd app create teste1 \
---repo https://github.com/mateusalxd/teste-kubernetes-local.git \
---path charts/teste1-chart \
---dest-server https://kubernetes.default.svc \
---dest-namespace local \
---sync-policy auto \
---sync-option CreateNamespace=true
-
 docker pull confluentinc/cp-zookeeper:7.2.1
 minikube image load confluentinc/cp-zookeeper:7.2.1
 
