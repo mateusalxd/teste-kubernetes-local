@@ -56,9 +56,10 @@ kubectl config current-context
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-kubectl port-forward svc/argocd-server -n argocd 8080:443 # execute em um terminal separado
-# acesse https://localhost:8080/ com usuário admin e com a senha recuperada com o comando abaixo
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+kubectl port-forward svc/argocd-server -n argocd 8080:443 # execute em um terminal separado
+# acesse https://localhost:8080/ com usuário admin e com a senha recuperada com o comando acima
+
 
 cd charts
 helm create teste1-chart
@@ -85,13 +86,18 @@ minikube image load provectuslabs/kafka-ui:latest
 docker pull ghcr.io/banzaicloud/kafka:2.13-3.1.0
 minikube image load ghcr.io/banzaicloud/kafka:2.13-3.1.0
 
+# ver build da imagem no README dentro de projects
+minikube image load mateusalxd/camel-kafka-consumer
+
 minikube service kafka-ui-service -n kafka
 
 helm install --debug --dry-run kafka-chart charts/kafka-chart/ --values charts/kafka-chart/values.yaml
 helm install kafka-chart charts/kafka-chart/ --values charts/kafka-chart/values.yaml
 helm delete kafka-chart
 
-kubectl -n kafka run kafka-topics -it --image=ghcr.io/banzaicloud/kafka:2.13-3.1.0 --rm=true --restart=Never -- /opt/kafka/bin/kafka-topics.sh --zookeeper zookeeper-0-service:2181 --topic my-topic --create --partitions 3 --replication-factor 3
+helm install --debug --dry-run camel-kafka-consumer-chart charts/camel-kafka-consumer-chart/ --values charts/camel-kafka-consumer-chart/values.yaml
+helm install camel-kafka-consumer-chart charts/camel-kafka-consumer-chart/ --values charts/camel-kafka-consumer-chart/values.yaml
+helm delete camel-kafka-consumer-chart
 
 argocd app create kafka \
 --repo https://github.com/mateusalxd/teste-kubernetes-local.git \

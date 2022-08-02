@@ -1,0 +1,29 @@
+{{- if .Values.cronJobEnabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.name }}
+  namespace: local
+spec:
+  schedule: "*/2 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: {{ .Values.name }}
+              image: mateusalxd/camel-kafka-consumer
+              imagePullPolicy: Never
+              env:
+                - name: KAFKA_BROKERS
+                  value: kafka-0-service.kafka.svc.cluster.local:9092,kafka-0-service.kafka.svc.cluster.local:9093
+                - name: KAFKA_CONSUMER_GROUP
+                  value: cronjob-consumer-group
+                - name: KAFKA_TOPIC
+                  value: topic1
+                - name: CHECK_INTERVAL_MS
+                  value: "5000"
+                - name: MAXIMUM_IDLE_TIME_MS
+                  value: "15000"
+          restartPolicy: OnFailure
+{{- end }}

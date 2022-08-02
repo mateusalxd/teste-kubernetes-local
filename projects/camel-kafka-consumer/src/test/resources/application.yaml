@@ -1,0 +1,14 @@
+camel:
+  component:
+    kafka:
+      group-id: ${KAFKA_CONSUMER_GROUP:consumer-group-local}
+      brokers: ${KAFKA_BROKERS:localhost:9092}
+  springboot:
+    main-run-controller: true
+
+app:
+  kafka:
+    topic: ${KAFKA_TOPIC:topic-test}
+    args: ${KAFKA_ARGS:}
+  check_interval_ms: ${CHECK_INTERVAL_MS:5000}
+  maximum_idle_time_ms: ${MAXIMUM_IDLE_TIME_MS:10000}
