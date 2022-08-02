@@ -1,0 +1,3 @@
+name: camel-kafka-producer
+
+deploymentEnabled: true

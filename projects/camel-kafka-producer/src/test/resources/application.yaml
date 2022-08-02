@@ -1,13 +1,13 @@
 camel:
   component:
     kafka:
-      group-id: ${KAFKA_CONSUMER_GROUP:consumer-group-local}
       brokers: ${KAFKA_BROKERS:localhost:9092}
   springboot:
     main-run-controller: true
-    duration-max-idle-seconds: ${MAX_IDLE_SECONDS:0}
 
 app:
   kafka:
     topic: ${KAFKA_TOPIC:topic-test}
-    args: ${KAFKA_ARGS:}
+  timer:
+    period: ${TIMER_PERIOD:1000}
+    repeat-count: ${TIMER_REPEAT_COUNT:10}

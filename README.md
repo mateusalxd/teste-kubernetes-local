@@ -83,13 +83,12 @@ minikube image load confluentinc/cp-kafka:7.2.1
 docker pull provectuslabs/kafka-ui:latest
 minikube image load provectuslabs/kafka-ui:latest
 
-docker pull ghcr.io/banzaicloud/kafka:2.13-3.1.0
-minikube image load ghcr.io/banzaicloud/kafka:2.13-3.1.0
-
 # ver build da imagem no README dentro de projects
 minikube image load mateusalxd/camel-kafka-consumer
+# ver build da imagem no README dentro de projects
+minikube image load mateusalxd/camel-kafka-producer
 
-minikube service kafka-ui-service -n kafka
+minikube service kafka-ui-service -n kafka --url
 
 helm install --debug --dry-run kafka-chart charts/kafka-chart/ --values charts/kafka-chart/values.yaml
 helm install kafka-chart charts/kafka-chart/ --values charts/kafka-chart/values.yaml
@@ -99,11 +98,31 @@ helm install --debug --dry-run camel-kafka-consumer-chart charts/camel-kafka-con
 helm install camel-kafka-consumer-chart charts/camel-kafka-consumer-chart/ --values charts/camel-kafka-consumer-chart/values.yaml
 helm delete camel-kafka-consumer-chart
 
+helm install --debug --dry-run camel-kafka-producer-chart charts/camel-kafka-producer-chart/ --values charts/camel-kafka-producer-chart/values.yaml
+helm install camel-kafka-producer-chart charts/camel-kafka-producer-chart/ --values charts/camel-kafka-producer-chart/values.yaml
+helm delete camel-kafka-producer-chart
+
 argocd app create kafka \
 --repo https://github.com/mateusalxd/teste-kubernetes-local.git \
 --path charts/kafka-chart \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace kafka \
+--sync-policy auto \
+--sync-option CreateNamespace=true
+
+argocd app create camel-kafka-producer \
+--repo https://github.com/mateusalxd/teste-kubernetes-local.git \
+--path charts/camel-kafka-producer-chart \
+--dest-server https://kubernetes.default.svc \
+--dest-namespace local \
+--sync-policy auto \
+--sync-option CreateNamespace=true
+
+argocd app create camel-kafka-producer \
+--repo https://github.com/mateusalxd/teste-kubernetes-local.git \
+--path charts/camel-kafka-producer-chart \
+--dest-server https://kubernetes.default.svc \
+--dest-namespace local \
 --sync-policy auto \
 --sync-option CreateNamespace=true
 

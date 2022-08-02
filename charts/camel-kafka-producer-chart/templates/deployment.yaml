@@ -17,15 +17,15 @@ spec:
     spec:
       containers:
         - name: {{ .Values.name }}
-          image: mateusalxd/camel-kafka-consumer
+          image: mateusalxd/camel-kafka-producer
           imagePullPolicy: Never
           env:
             - name: KAFKA_BROKERS
               value: kafka-0-service.kafka.svc.cluster.local:9092,kafka-0-service.kafka.svc.cluster.local:9093
-            - name: KAFKA_CONSUMER_GROUP
-              value: deployment-consumer-group
             - name: KAFKA_TOPIC
               value: topic1
-            - name: MAX_IDLE_SECONDS
-              value: "60"
+            - name: TIMER_PERIOD
+              value: "300"
+            - name: TIMER_REPEAT_COUNT
+              value: "1000"
 {{- end }}

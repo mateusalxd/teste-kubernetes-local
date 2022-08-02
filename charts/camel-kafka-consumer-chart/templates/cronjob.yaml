@@ -21,9 +21,7 @@ spec:
                   value: cronjob-consumer-group
                 - name: KAFKA_TOPIC
                   value: topic1
-                - name: CHECK_INTERVAL_MS
-                  value: "5000"
-                - name: MAXIMUM_IDLE_TIME_MS
-                  value: "15000"
+                - name: MAX_IDLE_SECONDS
+                  value: "60"
           restartPolicy: OnFailure
 {{- end }}

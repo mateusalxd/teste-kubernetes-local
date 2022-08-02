@@ -1,7 +1,7 @@
 FROM openjdk:11.0-jre-slim-buster
 
 ARG DEPENDENCY=build/libs/dependency
-ARG JAR_FILE=build/libs/camel-kafka-consumer-*.jar
+ARG JAR_FILE=build/libs/camel-kafka-producer-*.jar
 ARG KAFKA_BROKERS_ARG
 ARG KAFKA_CONSUMER_GROUP_ARG
 ARG KAFKA_TOPIC_ARG
@@ -17,5 +17,5 @@ ENV MAX_IDLE_SECONDS ${MAX_IDLE_SECONDS_ARGS}
 WORKDIR /app
 
 COPY ${DEPENDENCY}/BOOT-INF/lib/*.jar /app/
-COPY ${JAR_FILE} /app/camel-kafka-consumer.jar
-ENTRYPOINT ["java", "-jar", "/app/camel-kafka-consumer.jar"]
+COPY ${JAR_FILE} /app/camel-kafka-producer.jar
+ENTRYPOINT ["java", "-jar", "/app/camel-kafka-producer.jar"]
