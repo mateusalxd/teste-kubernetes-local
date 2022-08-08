@@ -1,4 +1,4 @@
 name: camel-kafka-consumer
 
-deploymentEnabled: true
-cronJobEnabled: false
+deploymentEnabled: false
+cronJobEnabled: true
